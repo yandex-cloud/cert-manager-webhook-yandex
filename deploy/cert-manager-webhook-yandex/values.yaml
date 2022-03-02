@@ -6,14 +6,14 @@
 # solve the DNS01 challenge.
 # This group name should be **unique**, hence using your own company's domain
 # here is recommended.
-groupName: acme.mycompany.example
+groupName: acme.cloud.yandex.com
 
 certManager:
   namespace: cert-manager
   serviceAccountName: cert-manager
 
 image:
-  repository: cr.yandex/crpqf1k9mr5udq09e7qn/cert-manager-webhook-yandex-cloud
+  repository: cr.yandex/crpqf1k9mr5udq09e7qn/cert-manager-webhook-yandex
   # tag: latest
   pullPolicy: IfNotPresent
 
