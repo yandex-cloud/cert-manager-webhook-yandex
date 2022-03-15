@@ -34,21 +34,21 @@ func main() {
 	// webhook, where the Name() method will be used to disambiguate between
 	// the different implementations.
 	cmd.RunWebhookServer(GroupName,
-		&yandexDNSSolver{},
+		&yandexCloudDNSSolver{},
 	)
 }
 
-// yandexDNSSolver implements the provider-specific logic needed to
+// yandexCloudDNSSolver implements the provider-specific logic needed to
 // 'present' an ACME challenge TXT record for your own DNS provider.
 // To do so, it must implement the `github.com/jetstack/cert-manager/pkg/acme/webhook.Solver`
 // interface.
-type yandexDNSSolver struct {
+type yandexCloudDNSSolver struct {
 	client *kubernetes.Clientset
 	sdk    *ycsdk.SDK
 	folder string
 }
 
-// yandexDNSConfig is a structure that is used to decode into when
+// yandexCloudDNSConfig is a structure that is used to decode into when
 // solving a DNS01 challenge.
 // This information is provided by cert-manager, and may be a reference to
 // additional configuration that's needed to solve the challenge for this
@@ -62,7 +62,7 @@ type yandexDNSSolver struct {
 // You should not include sensitive information here. If credentials need to
 // be used by your provider here, you should reference a Kubernetes Secret
 // resource and fetch these credentials using a Kubernetes clientset.
-type yandexDNSConfig struct {
+type yandexCloudDNSConfig struct {
 	Folder            string                 `json:"folder"`
 	ServiceAccountKey capi.SecretKeySelector `json:"serviceAccountSecretRef"`
 }
@@ -73,8 +73,8 @@ type yandexDNSConfig struct {
 // solvers configured with the same Name() **so long as they do not co-exist
 // within a single webhook deployment**.
 // For example, `cloudflare` may be used as the name of a solver.
-func (c *yandexDNSSolver) Name() string {
-	return "yandex-solver"
+func (c *yandexCloudDNSSolver) Name() string {
+	return "yandex-cloud-dns"
 }
 
 // Present is responsible for actually presenting the DNS record with the
@@ -82,7 +82,7 @@ func (c *yandexDNSSolver) Name() string {
 // This method should tolerate being called multiple times with the same value.
 // cert-manager itself will later perform a self check to ensure that the
 // solver has correctly configured the DNS provider.
-func (c *yandexDNSSolver) Present(ch *v1alpha1.ChallengeRequest) error {
+func (c *yandexCloudDNSSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 	err := c.setConfig(ch)
 	if err != nil {
 		return err
@@ -123,7 +123,7 @@ func (c *yandexDNSSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 // value provided on the ChallengeRequest should be cleaned up.
 // This is in order to facilitate multiple DNS validations for the same domain
 // concurrently.
-func (c *yandexDNSSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
+func (c *yandexCloudDNSSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 	zone, err := c.getDNSZone(ch.ResolvedZone)
 	if err != nil {
 		return err
@@ -153,7 +153,7 @@ func (c *yandexDNSSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 	return nil
 }
 
-func (c *yandexDNSSolver) getDNSZone(zone string) (*dns.DnsZone, error) {
+func (c *yandexCloudDNSSolver) getDNSZone(zone string) (*dns.DnsZone, error) {
 	resolvedZone, err := util.FindZoneByFqdn(zone, util.RecursiveNameservers)
 	if err != nil {
 		return nil, err
@@ -169,8 +169,7 @@ func (c *yandexDNSSolver) getDNSZone(zone string) (*dns.DnsZone, error) {
 		return nil, err
 	}
 
-	dnsZones := resp.DnsZones
-	for _, dnsZone := range dnsZones {
+	for _, dnsZone := range resp.DnsZones {
 		if isPublicDnsZone(dnsZone) {
 			return dnsZone, nil
 		}
@@ -188,7 +187,7 @@ func (c *yandexDNSSolver) getDNSZone(zone string) (*dns.DnsZone, error) {
 // provider accounts.
 // The stopCh can be used to handle early termination of the webhook, in cases
 // where a SIGTERM or similar signal is sent to the webhook process.
-func (c *yandexDNSSolver) Initialize(kubeClientConfig *rest.Config, _ <-chan struct{}) error {
+func (c *yandexCloudDNSSolver) Initialize(kubeClientConfig *rest.Config, _ <-chan struct{}) error {
 	cl, err := kubernetes.NewForConfig(kubeClientConfig)
 	if err != nil {
 		return err
@@ -201,8 +200,8 @@ func (c *yandexDNSSolver) Initialize(kubeClientConfig *rest.Config, _ <-chan str
 
 // loadConfig is a small helper function that decodes JSON configuration into
 // the typed config struct.
-func loadConfig(cfgJSON *extapi.JSON) (yandexDNSConfig, error) {
-	cfg := yandexDNSConfig{}
+func loadConfig(cfgJSON *extapi.JSON) (yandexCloudDNSConfig, error) {
+	cfg := yandexCloudDNSConfig{}
 	// handle the 'base case' where no configuration has been provided
 	if cfgJSON == nil {
 		return cfg, nil
@@ -214,7 +213,7 @@ func loadConfig(cfgJSON *extapi.JSON) (yandexDNSConfig, error) {
 	return cfg, nil
 }
 
-func (c *yandexDNSSolver) setConfig(ch *v1alpha1.ChallengeRequest) error {
+func (c *yandexCloudDNSSolver) setConfig(ch *v1alpha1.ChallengeRequest) error {
 	cfg, err := loadConfig(ch.Config)
 	if err != nil {
 		return err
@@ -248,7 +247,7 @@ func (c *yandexDNSSolver) setConfig(ch *v1alpha1.ChallengeRequest) error {
 	return nil
 }
 
-func (c *yandexDNSSolver) loadSecretData(selector capi.SecretKeySelector, ns string) ([]byte, error) {
+func (c *yandexCloudDNSSolver) loadSecretData(selector capi.SecretKeySelector, ns string) ([]byte, error) {
 	secret, err := c.client.CoreV1().Secrets(ns).Get(context.TODO(), selector.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to load secret %q", ns+"/"+selector.Name)

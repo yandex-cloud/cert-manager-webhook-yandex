@@ -11,10 +11,10 @@ var (
 )
 
 func TestRunsSuite(t *testing.T) {
-	fixture := dns.NewFixture(&yandexDNSSolver{},
+	fixture := dns.NewFixture(&yandexCloudDNSSolver{},
 		dns.SetResolvedZone(zone),
 		dns.SetAllowAmbientCredentials(false),
-		dns.SetManifestPath("testdata/yandex-solver"),
+		dns.SetManifestPath("testdata/yandex-cloud-dns"),
 		dns.SetStrict(true),
 	)
 

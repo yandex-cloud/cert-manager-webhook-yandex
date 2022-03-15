@@ -13,7 +13,7 @@ certManager:
   serviceAccountName: cert-manager
 
 image:
-  repository: cr.yandex/crpqf1k9mr5udq09e7qn/cert-manager-webhook-yandex
+  repository: cr.yandex/yc/cert-manager-webhook-yandex
   # tag: latest
   pullPolicy: IfNotPresent
 

@@ -8,33 +8,36 @@ You can use [Yandex Cloud Managed Service for Kubernetes](https://cloud.yandex.c
 
 ### Install webhook
 ```shell
-git clone https://github.com/Ditmarscehen/cert-manager-webhook-yandex
+git clone https://github.com/yandex-cloud/cert-manager-webhook-yandex.git
 ```
 
 ```shell
 helm install -n cert-manager yandex-webhook ./deploy/cert-manager-webhook-yandex
 ```
 
-### Create Secret
+### Create the AccessKey Secret
 
-Create [iam key](https://cloud.yandex.ru/docs/cli/cli-ref/managed-services/iam/key/create) with `--format=json`
+Obtain [iam key json file](https://cloud.yandex.ru/docs/cli/cli-ref/managed-services/iam/key/create)
+```shell
+yc iam key create iamkey \
+ --service-account-id=<your service account ID> 
+ --format=json \
+ --output=iamkey.json
+```
+Note that service account needs permissions to create and delete records at your zone 
 
 Create secret:
 ```shell
-kubectl create secret generic ycdnssercret \
-   --from-file=iamkey.json \
-   --namespace=$NAMESPACE
+kubectl create secret generic cert-manager-secret --from-file=iamkey.json
 ```
-NAMESPACE for Issuer is default, for ClusterIssuer is cert-manager (пока не разбирался, еще потестить надо)
-
 ### Create Issuer or ClusterIssuer
 
 Create an [Issuer or ClusterIssuer](https://cert-manager.io/docs/configuration/acme/) with [webhook](https://cert-manager.io/docs/configuration/acme/dns01/webhook/) with next parameters
 
 ```yaml
-solverName: yandex-solver
+solverName: yandex-cloud-dns
+groupName: acme.cloud.yandex.com
 ```
-`groupName` is defined in deploy/cert-manager-webhook-yandex/values.yaml
 
 Issuer example:
 ```yaml
@@ -57,14 +60,14 @@ spec:
       - dns01:
           webhook:
             config:
-              # The ID of the folder
-              folder: folderid
+              # The ID of the folder where dns-zone located in
+              folder: <your folder ID>
               # This is the secret used to access the service account
               serviceAccountSecretRef:
-                name: ycdnssercret
+                name: cert-manager-secret
                 key: iamkey.json
             groupName: acme.mycompany.example
-            solverName: yandex-solver
+            solverName: yandex-cloud-dns
 ```
 
 ClusterIssuer example:
@@ -88,14 +91,14 @@ spec:
       - dns01:
           webhook:
             config:
-              # The ID of the folder
-              folder: folderid
+              # The ID of the folder where dns-zone located in
+              folder: <your folder ID>
               # This is the secret used to access the service account
               serviceAccountSecretRef:
-                name: ycdnssercret
+                name: cert-manager-secret
                 key: iamkey.json
             groupName: acme.mycompany.example
-            solverName: yandex
+            solverName: yandex-cloud-dns
 ```
 
 ### Create Certificate
