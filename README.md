@@ -66,7 +66,7 @@ spec:
               serviceAccountSecretRef:
                 name: cert-manager-secret
                 key: iamkey.json
-            groupName: acme.mycompany.example
+            groupName: acme.cloud.yandex.com
             solverName: yandex-cloud-dns
 ```
 
@@ -97,7 +97,7 @@ spec:
               serviceAccountSecretRef:
                 name: cert-manager-secret
                 key: iamkey.json
-            groupName: acme.mycompany.example
+            groupName: acme.cloud.yandex.com
             solverName: yandex-cloud-dns
 ```
 
