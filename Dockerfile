@@ -3,6 +3,7 @@ FROM golang:1.17-alpine AS build_deps
 RUN apk add --no-cache git
 
 WORKDIR /workspace
+ENV GO111MODULE=on
 
 COPY go.mod .
 COPY go.sum .
