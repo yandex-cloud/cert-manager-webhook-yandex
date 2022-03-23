@@ -28,7 +28,7 @@ Note that service account needs permissions to create and delete records at your
 
 Create secret:
 ```shell
-kubectl create secret generic cert-manager-secret --from-file=iamkey.json
+kubectl create secret generic cert-manager-secret --from-file=iamkey.json -n cert-manager
 ```
 ### Create Issuer or ClusterIssuer
 
