@@ -11,6 +11,7 @@ groupName: acme.cloud.yandex.com
 certManager:
   namespace: cert-manager
   serviceAccountName: cert-manager
+  nameservers: []
 
 image:
   repository: cr.yandex/yc/cert-manager-webhook-yandex

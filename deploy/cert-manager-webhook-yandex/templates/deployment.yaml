@@ -21,6 +21,14 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ include "cert-manager-webhook-yandex.fullname" . }}
+      {{- if .Values.certManager.nameservers }}
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+        {{- range .Values.certManager.nameservers }}
+          - {{ . }}
+        {{- end }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
