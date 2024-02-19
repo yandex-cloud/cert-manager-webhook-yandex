@@ -1,4 +1,4 @@
-FROM golang:1.17-alpine AS build_deps
+FROM golang:1.21-alpine3.18 AS build_deps
 
 RUN apk add --no-cache git
 
@@ -12,11 +12,14 @@ RUN go mod download
 
 FROM build_deps AS build
 
+ENV GOOS=linux
+ENV GOARCH=amd64
+
 COPY . .
 
 RUN CGO_ENABLED=0 go build -o webhook -ldflags '-w -extldflags "-static"' .
 
-FROM alpine:3.9
+FROM alpine:3.18
 
 RUN apk add --no-cache ca-certificates
 
