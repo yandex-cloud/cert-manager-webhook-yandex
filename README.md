@@ -17,7 +17,7 @@ helm install -n cert-manager yandex-webhook ./deploy/cert-manager-webhook-yandex
 
 ### Create the AccessKey Secret
 
-Obtain [iam key json file](https://cloud.yandex.ru/docs/cli/cli-ref/managed-services/iam/key/create)
+Obtain [iam key json file](https://yandex.cloud/en/docs/iam/operations/iam-token/create-for-sa#via-cli)
 ```shell
 yc iam key create iamkey \
  --service-account-id=<your service account ID> 
