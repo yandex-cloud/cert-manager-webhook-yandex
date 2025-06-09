@@ -1,0 +1,28 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: yc-clusterissuer
+spec:
+  acme:
+    # You must replace this email address with your own.
+    # Let's Encrypt will use this to contact you about expiring
+    # certificates, and issues related to your account.
+    email: {{ .Values.config.email }}
+    server: {{ .Values.config.server }}
+    privateKeySecretRef:
+      # Secret resource that will be used to store the account's private key.
+      name: secret-ref
+    solvers:
+      - dns01:
+          webhook:
+            config:
+              # The ID of the folder where dns-zone located in
+              folder: {{ .Values.config.folder_id }}
+              # This is the secret used to access the service account
+              serviceAccountSecretRef:
+                name: cm-sa-creds
+                key: key.json
+            groupName: acme.cloud.yandex.com
+            solverName: yandex-cloud-dns
+            
+ 

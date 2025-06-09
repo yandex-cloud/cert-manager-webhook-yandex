@@ -13,24 +13,24 @@ spec:
   selector:
     matchLabels:
       app: {{ include "cert-manager-webhook-yandex.name" . }}
-      release: {{ .Release.Name }}
+      release: {{ .Release.Name   }}
   template:
     metadata:
       labels:
         app: {{ include "cert-manager-webhook-yandex.name" . }}
         release: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ include "cert-manager-webhook-yandex.fullname" . }}
+      serviceAccountName:   {{ include "cert-manager-webhook-yandex.fullname" . }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{  .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - --tls-cert-file=/tls/tls.crt
             - --tls-private-key-file=/tls/tls.key
           env:
             - name: GROUP_NAME
-              value: {{ .Values.groupName | quote }}
+              value: {{ .Values.groupName | quote }} 
           ports:
             - name: https
               containerPort: 443

@@ -13,13 +13,13 @@ If release name contains chart name it will be used as a full name.
 */}}
 {{- define "cert-manager-webhook-yandex.fullname" -}}
 {{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- .Values.fullnameOverride | trunc 61 | trimSuffix "-" -}}-yc
 {{- else -}}
 {{- $name := default .Chart.Name .Values.nameOverride -}}
 {{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- .Release.Name | trunc 61 | trimSuffix "-" -}}-yc
 {{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 61 | trimSuffix "-" -}}-yc
 {{- end -}}
 {{- end -}}
 {{- end -}}
