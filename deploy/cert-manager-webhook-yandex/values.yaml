@@ -1,43 +1,244 @@
-# The GroupName here is used to identify your company or business unit that
-# created this webhook.
-# For example, this may be "acme.mycompany.example".
-# This name will need to be referenced in each Issuer's `webhook` stanza to
-# inform cert-manager of where to send ChallengePayload resources in order to
-# solve the DNS01 challenge.
-# This group name should be **unique**, hence using your own company's domain
-# here is recommended.
 groupName: acme.cloud.yandex.com
-
 certManager:
-  namespace: cert-manager
-  serviceAccountName: cert-manager
-
+    # must be identical to cert-manager.serviceAccount.name
+    serviceAccountName: cert-manager-with-yc-webhook
 image:
-  repository: cr.yandex/yc/cert-manager-webhook-yandex
-  # tag: latest
-  pullPolicy: IfNotPresent
-
-nameOverride: ""
-fullnameOverride: ""
-
+    repository: cr.yandex/yc-marketplace/yandex-cloud/cert-manager-webhook-yandex/cert-manager-webhook-yandex1711961635594770953820309645949480358266192316354
+    tag: 1.0.2
+    pullPolicy: Always
 service:
-  type: ClusterIP
-  port: 443
-
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
+    type: ClusterIP
+    port: !!float 443
+config:
+    folder_id: string
+    email: string
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    auth:
+        json: |
+            {}
+cert-manager:
+    image:
+        pullPolicy: Always
+        repository: quay.io/jetstack/cert-manager-controller
+    serviceAccount:
+        create: true
+        # must be identical to certmManager.serviceAccountname  
+        name: cert-manager-with-yc-webhook
+        automountServiceAccountToken: true
+    installCRDs: false
+    acmesolver:
+        image:
+            repository: quay.io/jetstack/cert-manager-acmesolver
+    affinity: {}
+    cainjector:
+        affinity: {}
+        containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+                drop:
+                    - ALL
+        enableServiceLinks: false
+        enabled: true
+        extraArgs: []
+        image:
+            pullPolicy: IfNotPresent
+            repository: quay.io/jetstack/cert-manager-cainjector
+        nodeSelector:
+            kubernetes.io/os: linux
+        podDisruptionBudget:
+            enabled: false
+        podLabels: {}
+        replicaCount: !!float 1
+        resources: {}
+        securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+                type: RuntimeDefault
+        serviceAccount:
+            automountServiceAccountToken: true
+            create: true
+        strategy: {}
+        tolerations: []
+        topologySpreadConstraints: []
+        volumeMounts: []
+        volumes: []
+    clusterResourceNamespace: ""
+    config: null
+    containerSecurityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+            drop:
+                - ALL
+    dns01RecursiveNameservers: ""
+    dns01RecursiveNameserversOnly: false
+    enableCertificateOwnerRef: false
+    enableServiceLinks: false
+    extraArgs: []
+    extraEnv: []
+    featureGates: ""
+    global:
+        commonLabels: {}
+        imagePullSecrets: []
+        leaderElection:
+            namespace: kube-system
+        logLevel: !!float 2
+        podSecurityPolicy:
+            enabled: false
+            useAppArmor: true
+        priorityClassName: ""
+        rbac:
+            aggregateClusterRoles: true
+            create: true
+    ingressShim: {}
+    livenessProbe:
+        enabled: false
+        failureThreshold: !!float 8
+        initialDelaySeconds: !!float 10
+        periodSeconds: !!float 10
+        successThreshold: !!float 1
+        timeoutSeconds: !!float 15
+    maxConcurrentChallenges: !!float 60
+    namespace: ""
+    nodeSelector:
+        kubernetes.io/os: linux
+    podDisruptionBudget:
+        enabled: false
+    podLabels: {}
+    prometheus:
+        enabled: true
+        servicemonitor:
+            annotations: {}
+            enabled: false
+            endpointAdditionalProperties: {}
+            honorLabels: false
+            interval: 60s
+            labels: {}
+            path: /metrics
+            prometheusInstance: default
+            scrapeTimeout: 30s
+            targetPort: !!float 9402
+    replicaCount: !!float 1
+    resources: {}
+    securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+            type: RuntimeDefault
+    startupapicheck:
+        affinity: {}
+        backoffLimit: !!float 4
+        containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+                drop:
+                    - ALL
+        enableServiceLinks: false
+        enabled: true
+        extraArgs: []
+        image:
+            pullPolicy: IfNotPresent
+            repository: quay.io/jetstack/cert-manager-ctl
+        jobAnnotations:
+            helm.sh/hook: post-install
+            helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+            helm.sh/hook-weight: "1"
+        nodeSelector:
+            kubernetes.io/os: linux
+        podLabels: {}
+        rbac:
+            annotations:
+                helm.sh/hook: post-install
+                helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+                helm.sh/hook-weight: "-5"
+        resources: {}
+        securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+                type: RuntimeDefault
+        serviceAccount:
+            annotations:
+                helm.sh/hook: post-install
+                helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+                helm.sh/hook-weight: "-5"
+            automountServiceAccountToken: true
+            create: true
+        timeout: 1m
+        tolerations: []
+        volumeMounts: []
+        volumes: []
+    strategy: {}
+    tolerations: []
+    topologySpreadConstraints: []
+    volumeMounts: []
+    volumes: []
+    webhook:
+        affinity: {}
+        config: null
+        containerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+                drop:
+                    - ALL
+        enableServiceLinks: false
+        extraArgs: []
+        featureGates: ""
+        hostNetwork: false
+        image:
+            pullPolicy: IfNotPresent
+            repository: quay.io/jetstack/cert-manager-webhook
+        livenessProbe:
+            failureThreshold: !!float 3
+            initialDelaySeconds: !!float 60
+            periodSeconds: !!float 10
+            successThreshold: !!float 1
+            timeoutSeconds: !!float 1
+        networkPolicy:
+            egress:
+                - ports:
+                    - port: !!float 80
+                      protocol: TCP
+                    - port: !!float 443
+                      protocol: TCP
+                    - port: !!float 53
+                      protocol: TCP
+                    - port: !!float 53
+                      protocol: UDP
+                    - port: !!float 6443
+                      protocol: TCP
+                  to:
+                    - ipBlock:
+                        cidr: 0.0.0.0/0
+            enabled: false
+            ingress:
+                - from:
+                    - ipBlock:
+                        cidr: 0.0.0.0/0
+        nodeSelector:
+            kubernetes.io/os: linux
+        podDisruptionBudget:
+            enabled: false
+        podLabels: {}
+        readinessProbe:
+            failureThreshold: !!float 3
+            initialDelaySeconds: !!float 5
+            periodSeconds: !!float 5
+            successThreshold: !!float 1
+            timeoutSeconds: !!float 1
+        replicaCount: !!float 1
+        resources: {}
+        securePort: !!float 10250
+        securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+                type: RuntimeDefault
+        serviceAccount:
+            automountServiceAccountToken: true
+            create: true
+        serviceLabels: {}
+        serviceType: ClusterIP
+        strategy: {}
+        timeoutSeconds: !!float 10
+        tolerations: []
+        topologySpreadConstraints: []
+        url: {}
+        volumeMounts: []
+        volumes: []

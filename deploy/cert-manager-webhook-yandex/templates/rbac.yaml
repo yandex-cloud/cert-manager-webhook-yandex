@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ include "cert-manager-webhook-yandex.fullname" . }}
+  name:   {{ include "cert-manager-webhook-yandex.fullname" . }}
   labels:
     app: {{ include "cert-manager-webhook-yandex.name" . }}
     chart: {{ include "cert-manager-webhook-yandex.chart" . }}
@@ -51,7 +51,7 @@ roleRef:
 subjects:
   - apiGroup: ""
     kind: ServiceAccount
-    name: {{ include "cert-manager-webhook-yandex.fullname" . }}
+    name:   {{ include "cert-manager-webhook-yandex.fullname" . }}
     namespace: {{ .Release.Namespace }}
 ---
 # Grant the webhook permission to read the ConfigMap containing the Kubernetes
@@ -74,7 +74,7 @@ roleRef:
 subjects:
   - apiGroup: ""
     kind: ServiceAccount
-    name: {{ include "cert-manager-webhook-yandex.fullname" . }}
+    name:  {{ include "cert-manager-webhook-yandex.fullname" . }}
     namespace: {{ .Release.Namespace }}
 ---
 # apiserver gets the auth-delegator role to delegate auth decisions to
@@ -95,7 +95,7 @@ roleRef:
 subjects:
   - apiGroup: ""
     kind: ServiceAccount
-    name: {{ include "cert-manager-webhook-yandex.fullname" . }}
+    name:   {{ include "cert-manager-webhook-yandex.fullname" . }}
     namespace: {{ .Release.Namespace }}
 ---
 # Grant cert-manager permission to validate using our apiserver
@@ -132,5 +132,5 @@ roleRef:
 subjects:
   - apiGroup: ""
     kind: ServiceAccount
-    name: {{ .Values.certManager.serviceAccountName }}
-    namespace: {{ .Values.certManager.namespace }}
+    name: {{ .Values.certManager.serviceAccountName}}
+    namespace: {{ .Release.Namespace }}

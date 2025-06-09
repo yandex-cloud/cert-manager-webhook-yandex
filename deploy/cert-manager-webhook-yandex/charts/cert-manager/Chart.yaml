@@ -1,0 +1,30 @@
+name: cert-manager
+home: https://github.com/cert-manager/cert-manager
+sources:
+    - https://github.com/cert-manager/cert-manager
+version: v1.13.2
+description: A Helm chart for cert-manager
+keywords:
+    - cert-manager
+    - kube-lego
+    - letsencrypt
+    - tls
+maintainers:
+    - name: cert-manager-maintainers
+      email: cert-manager-maintainers@googlegroups.com
+      url: https://cert-manager.io
+icon: https://raw.githubusercontent.com/cert-manager/cert-manager/d53c0b9270f8cd90d908460d69502694e1838f5f/logo/logo-small.png
+apiVersion: v1
+condition: ""
+tags: ""
+appVersion: v1.13.2
+deprecated: false
+annotations:
+    artifacthub.io/license: Apache-2.0
+    artifacthub.io/prerelease: "false"
+    artifacthub.io/signKey: |
+        fingerprint: 1020CF3C033D4F35BAE1C19E1226061C665DF13E
+        url: https://cert-manager.io/public-keys/cert-manager-keyring-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.gpg
+kubeVersion: '>= 1.22.0-0'
+dependencies: []
+type: ""
