@@ -1,0 +1,6 @@
+dependencies:
+- name: cert-manager
+  repository: ""
+  version: '*'
+digest: sha256:f4340b1c01cd40fe3920369c5c64a6691f42f06edfa990a0703741eb3e1a91ea
+generated: "2025-06-20T08:26:31.364298417Z"
