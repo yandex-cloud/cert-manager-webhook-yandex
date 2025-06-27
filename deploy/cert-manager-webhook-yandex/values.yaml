@@ -2,6 +2,9 @@ groupName: acme.cloud.yandex.com
 certManager:
     # must be identical to cert-manager.serviceAccount.name
     serviceAccountName: cert-manager-with-yc-webhook
+customCloudApi:
+    enabled: false
+    endpoint: "api.cloud.yandex.net:443"
 image:
     repository: cr.yandex/yc-marketplace/yandex-cloud/cert-manager-webhook-yandex/cert-manager-webhook-yandex1711961635594770953820309645949480358266192316354
     tag: 1.0.2
