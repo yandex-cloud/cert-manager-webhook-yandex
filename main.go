@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -22,21 +23,23 @@ import (
 	"github.com/yandex-cloud/go-sdk/iamkey"
 )
 
-var GroupName = os.Getenv("GROUP_NAME")
-
 func main() {
-	if GroupName == "" {
-		panic("GROUP_NAME must be specified")
+
+	if GroupName := os.Getenv("GROUP_NAME"); GroupName == "" {
+		log.Fatal("GROUP_NAME env must be specified")
+	} else {
+		// This will register our yandex DNS provider with the webhook serving
+		// library, making it available as an API under the provided GroupName.
+		// You can register multiple DNS provider implementations with a single
+		// webhook, where the Name() method will be used to disambiguate between
+		// the different implementations.
+		cmd.RunWebhookServer(GroupName,
+			&yandexCloudDNSSolver{
+				apiEndpoint: os.Getenv("API_ENDPOINT"),
+			},
+		)
 	}
 
-	// This will register our yandex DNS provider with the webhook serving
-	// library, making it available as an API under the provided GroupName.
-	// You can register multiple DNS provider implementations with a single
-	// webhook, where the Name() method will be used to disambiguate between
-	// the different implementations.
-	cmd.RunWebhookServer(GroupName,
-		&yandexCloudDNSSolver{},
-	)
 }
 
 // yandexCloudDNSSolver implements the provider-specific logic needed to
@@ -44,9 +47,10 @@ func main() {
 // To do so, it must implement the `github.com/jetstack/cert-manager/pkg/acme/webhook.Solver`
 // interface.
 type yandexCloudDNSSolver struct {
-	client *kubernetes.Clientset
-	sdk    *ycsdk.SDK
-	folder string
+	apiEndpoint string
+	client      *kubernetes.Clientset
+	sdk         *ycsdk.SDK
+	folder      string
 }
 
 // yandexCloudDNSConfig is a structure that is used to decode into when
@@ -237,6 +241,11 @@ func (c *yandexCloudDNSSolver) setConfig(ch *v1alpha1.ChallengeRequest) error {
 	}
 
 	config := ycsdk.Config{Credentials: saKey}
+
+	if c.apiEndpoint != "" {
+		config.Endpoint = c.apiEndpoint
+	}
+
 	sdk, err := ycsdk.Build(context.Background(), config)
 	if err != nil {
 		return err
