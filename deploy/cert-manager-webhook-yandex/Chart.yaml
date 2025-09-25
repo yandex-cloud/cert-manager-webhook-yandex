@@ -1,12 +1,15 @@
 name: cert-manager-webhook-yandex
 sources: []
-version: 1.0.9
+version: 1.0.11
 description: Yandex Cloud DNS cert-manager ACME webhook
 keywords: []
 maintainers: []
-apiVersion: v1
+apiVersion: v2
 appVersion: 1.0.3
 deprecated: false
 annotations: {}
 kubeVersion: ""
-dependencies: []
+dependencies:
+- name: cert-manager
+  version: "*"
+  condition: cert-manager.enabled

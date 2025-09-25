@@ -6,8 +6,8 @@ customCloudApi:
     enabled: false
     endpoint: "api.cloud.yandex.net:443"
 image:
-    repository: cr.yandex/yc-marketplace/yandex-cloud/cert-manager-webhook-yandex/cert-manager-webhook-yandex1711961635594770953820309645949480358266192316354
-    tag: 1.0.2
+    repository: cr.yandex/yc-marketplace/yandex-cloud/cert-manager-webhook-yandex/cert-manager-webhook-yandex1749231714289200163949703675370054230465107054664
+    tag: 1.0.3
     pullPolicy: Always
 service:
     type: ClusterIP
@@ -19,7 +19,10 @@ config:
     auth:
         json: |
             {}
+installClusterIssuer:
+    enabled: true
 cert-manager:
+    enabled: true
     image:
         pullPolicy: Always
         repository: quay.io/jetstack/cert-manager-controller
