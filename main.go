@@ -24,7 +24,6 @@ import (
 )
 
 func main() {
-
 	if GroupName := os.Getenv("GROUP_NAME"); GroupName == "" {
 		log.Fatal("GROUP_NAME env must be specified")
 	} else {
@@ -69,7 +68,7 @@ type yandexCloudDNSSolver struct {
 // resource and fetch these credentials using a Kubernetes clientset.
 type yandexCloudDNSConfig struct {
 	Folder            string                 `json:"folder"`
-	ServiceAccountKey capi.SecretKeySelector `json:"serviceAccountSecretRef"`
+	ServiceAccountKey capi.SecretKeySelector `json:"serviceAccountSecretRef,omitempty"`
 }
 
 // Name is used as the name for this DNS solver when referencing it on the ACME
@@ -224,23 +223,30 @@ func (c *yandexCloudDNSSolver) setConfig(ch *v1alpha1.ChallengeRequest) error {
 		return err
 	}
 
-	saBytes, err := c.loadSecretData(cfg.ServiceAccountKey, ch.ResourceNamespace)
-	if err != nil {
-		return err
-	}
+	var config ycsdk.Config
+	if cfg.ServiceAccountKey.Name != "" && cfg.ServiceAccountKey.Key != "" {
+		saBytes, err := c.loadSecretData(cfg.ServiceAccountKey, ch.ResourceNamespace)
+		if err != nil {
+			return err
+		}
 
-	key := &iamkey.Key{}
-	err = key.UnmarshalJSON(saBytes)
-	if err != nil {
-		return err
-	}
+		key := &iamkey.Key{}
+		err = key.UnmarshalJSON(saBytes)
+		if err != nil {
+			return err
+		}
 
-	saKey, err := ycsdk.ServiceAccountKey(key)
-	if err != nil {
-		return err
-	}
+		saKey, err := ycsdk.ServiceAccountKey(key)
+		if err != nil {
+			return err
+		}
 
-	config := ycsdk.Config{Credentials: saKey}
+		config = ycsdk.Config{Credentials: saKey}
+	} else {
+		config = ycsdk.Config{
+			Credentials: ycsdk.InstanceServiceAccount(),
+		}
+	}
 
 	if c.apiEndpoint != "" {
 		config.Endpoint = c.apiEndpoint
