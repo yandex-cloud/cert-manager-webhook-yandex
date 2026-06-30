@@ -20,6 +20,9 @@ spec:
         app: {{ include "cert-manager-webhook-yandex.name" . }}
         release: {{ .Release.Name }}
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName:   {{ include "cert-manager-webhook-yandex.fullname" . }}
       containers:
         - name: {{ .Chart.Name }}
@@ -35,6 +38,12 @@ spec:
             {{- end }}
             - name: GROUP_NAME
               value: {{ .Values.groupName | quote }} 
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            #runAsNonRoot: true
           ports:
             - name: https
               containerPort: 443
