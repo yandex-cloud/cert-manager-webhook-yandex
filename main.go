@@ -19,8 +19,11 @@ import (
 	"github.com/cert-manager/cert-manager/pkg/issuer/acme/dns/util"
 	"github.com/pkg/errors"
 	"github.com/yandex-cloud/go-genproto/yandex/cloud/dns/v1"
-	ycsdk "github.com/yandex-cloud/go-sdk"
-	"github.com/yandex-cloud/go-sdk/iamkey"
+	dnssdk "github.com/yandex-cloud/go-sdk/services/dns/v1"
+	ycsdk "github.com/yandex-cloud/go-sdk/v2"
+	"github.com/yandex-cloud/go-sdk/v2/credentials"
+	"github.com/yandex-cloud/go-sdk/v2/pkg/iamkey"
+	"github.com/yandex-cloud/go-sdk/v2/pkg/options"
 )
 
 func main() {
@@ -47,10 +50,10 @@ func main() {
 // To do so, it must implement the `github.com/jetstack/cert-manager/pkg/acme/webhook.Solver`
 // interface.
 type yandexCloudDNSSolver struct {
-	apiEndpoint string
-	client      *kubernetes.Clientset
-	sdk         *ycsdk.SDK
-	folder      string
+	apiEndpoint   string
+	client        *kubernetes.Clientset
+	dnsZoneClient dnssdk.DnsZoneClient
+	folder        string
 }
 
 // yandexCloudDNSConfig is a structure that is used to decode into when
@@ -110,12 +113,12 @@ func (c *yandexCloudDNSSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 		Merges:    []*dns.RecordSet{&record},
 	}
 
-	op, err := c.sdk.DNS().DnsZone().UpsertRecordSets(context.Background(), &reqUpd)
+	op, err := c.dnsZoneClient.UpsertRecordSets(context.Background(), &reqUpd)
 	if err != nil {
 		return err
 	}
 
-	for !op.Done {
+	for !op.Done() {
 		time.Sleep(time.Second)
 	}
 
@@ -146,12 +149,12 @@ func (c *yandexCloudDNSSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 		Deletions: []*dns.RecordSet{&record},
 	}
 
-	op, err := c.sdk.DNS().DnsZone().UpsertRecordSets(context.Background(), &reqDel)
+	op, err := c.dnsZoneClient.UpsertRecordSets(context.Background(), &reqDel)
 	if err != nil {
 		return err
 	}
 
-	for !op.Done {
+	for !op.Done() {
 		time.Sleep(time.Second)
 	}
 
@@ -168,8 +171,7 @@ func (c *yandexCloudDNSSolver) getDNSZone(zone string) (*dns.DnsZone, error) {
 		FolderId: c.folder,
 		Filter:   `zone = "` + resolvedZone + `"`,
 	}
-
-	resp, err := c.sdk.DNS().DnsZone().List(context.Background(), &req)
+	resp, err := c.dnsZoneClient.List(context.Background(), &req)
 	if err != nil {
 		return nil, err
 	}
@@ -219,6 +221,7 @@ func loadConfig(cfgJSON *extapi.JSON) (yandexCloudDNSConfig, error) {
 }
 
 func (c *yandexCloudDNSSolver) setConfig(ch *v1alpha1.ChallengeRequest) error {
+	apiEndpoint := "api.cloud.yandex.net:443"
 	cfg, err := loadConfig(ch.Config)
 	if err != nil {
 		return err
@@ -235,23 +238,21 @@ func (c *yandexCloudDNSSolver) setConfig(ch *v1alpha1.ChallengeRequest) error {
 		return err
 	}
 
-	saKey, err := ycsdk.ServiceAccountKey(key)
+	saKey, err := credentials.ServiceAccountKey(key)
 	if err != nil {
 		return err
 	}
-
-	config := ycsdk.Config{Credentials: saKey}
 
 	if c.apiEndpoint != "" {
-		config.Endpoint = c.apiEndpoint
+		apiEndpoint = c.apiEndpoint
 	}
 
-	sdk, err := ycsdk.Build(context.Background(), config)
+	sdk, err := ycsdk.Build(context.Background(), options.WithCredentials(saKey), options.WithDiscoveryEndpoint(apiEndpoint))
 	if err != nil {
 		return err
 	}
 
-	c.sdk = sdk
+	c.dnsZoneClient = dnssdk.NewDnsZoneClient(sdk)
 	c.folder = cfg.Folder
 
 	return nil
